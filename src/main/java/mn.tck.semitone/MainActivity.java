@@ -22,6 +22,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Window;
+import android.view.WindowManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Menu;
@@ -56,6 +57,9 @@ public class MainActivity extends FragmentActivity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_main);
 
+	// keep screen on (useful for tuner usage)
+	getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+	
         PianoEngine.create(this);
         RecordEngine.create(this);
 

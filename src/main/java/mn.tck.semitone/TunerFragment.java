@@ -40,8 +40,8 @@ public class TunerFragment extends SemitoneFragment implements RecordEngine.Call
     final static int HIST_SIZE = 16;
 
     View view;
-    TextView notename;
-    int notenamesize;
+    //TextView notename;
+    int centerrorsize;
     CentErrorView centerror;
 
     int concert_a;
@@ -65,20 +65,21 @@ public class TunerFragment extends SemitoneFragment implements RecordEngine.Call
         hist = new double[HIST_SIZE];
         sorted = new double[HIST_SIZE];
 
-        notename = (TextView) view.findViewById(R.id.notename);
+        //notename = (TextView) view.findViewById(R.id.notename);
         centerror = (CentErrorView) view.findViewById(R.id.centerror);
 
-        notename.getViewTreeObserver().addOnGlobalLayoutListener(
+        centerror.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override public void onGlobalLayout() {
-                notename.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                notenamesize = Util.maxTextSize("G#000", notename.getWidth());
+                centerror.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+		// TODO: fix for landscape mode (cents display)
+                centerrorsize = Util.maxTextSize("G#000", centerror.getWidth());
                 if (RecordEngine.created) {
-                    notename.setTextSize(TypedValue.COMPLEX_UNIT_PX, notenamesize);
+                    centerror.setTextSize(TypedValue.COMPLEX_UNIT_PX, centerrorsize);
                 } else {
-                    notename.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-                    notename.setText(getResources().getString(R.string.micperm));
-                    notename.setOnClickListener(new View.OnClickListener() {
+                    centerror.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
+                    centerror.setText(getResources().getString(R.string.micperm));
+                    centerror.setOnClickListener(new View.OnClickListener() {
                         @Override public void onClick(View v) {
                             if (RecordEngine.created) return;
                             requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_MIC);
@@ -104,8 +105,8 @@ public class TunerFragment extends SemitoneFragment implements RecordEngine.Call
         switch (code) {
         case REQUEST_MIC:
             if (res.length > 0 && res[0] == PackageManager.PERMISSION_GRANTED) {
-                notename.setText("");
-                notename.setTextSize(TypedValue.COMPLEX_UNIT_PX, notenamesize);
+                centerror.setText("");
+                centerror.setTextSize(TypedValue.COMPLEX_UNIT_PX, centerrorsize);
                 RecordEngine.create(getActivity());
                 dbuf = new double[DSP.fftlen];
             }
@@ -141,9 +142,9 @@ public class TunerFragment extends SemitoneFragment implements RecordEngine.Call
         if (getActivity() != null) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override public void run() {
-                    notename.setText(Util.notenames[note] +
-                        (octave + 5 - (note <= 2 ? 1 : 0)));
-                    centerror.setError(median - rounded);
+                    centerror.setError(Util.notenames[note] +
+				       (octave + 5 - (note <= 2 ? 1 : 0)),
+				       median - rounded);
                 }
             });
         }

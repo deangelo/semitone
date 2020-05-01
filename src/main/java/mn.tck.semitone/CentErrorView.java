@@ -22,8 +22,17 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.style.RelativeSizeSpan;
+import android.util.Log;
 import android.widget.TextView;
 import android.util.AttributeSet;
+
+import static java.lang.Integer.max;
+import static java.lang.Math.abs;
+import static java.lang.Math.min;
 
 public class CentErrorView extends TextView {
 
@@ -44,25 +53,42 @@ public class CentErrorView extends TextView {
 
         cents = context.getResources().getString(R.string.cents);
 
-        error = 0;
+        error = -1000;
     }
 
-    public void setError(double error) {
+    public void setError(CharSequence note, double error) {
         this.error = error;
-        setText(String.format("%+.2f %s", error*100, cents));
+
+        String error_string;
+        error_string = String.format("%+.2f %s", error*100, cents);
+
+        SpannableString spannable = new SpannableString(note + "\n" + error_string);
+        spannable.setSpan(new RelativeSizeSpan(0.2f),
+                note.length()+1, note.length()+1+error_string.length(),
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        setText(spannable);
+
+        // fade from black to green, starting with 10 cents deviation
+        int g = (int)(Math.max(0, 0.1 - abs(this.error))*1500);
+        // set background color g=0..100 as we approach 0 cents difference
+        this.setBackgroundColor( 0xFF000000 + ((g/10) << 16) + (g << 8) + (g/10));
     }
 
     @Override protected void onDraw(Canvas canvas) {
+
         super.onDraw(canvas);
-        int width = getWidth(), height = getHeight(), middle = width / 2;
 
-        // draw middle indicator
-        canvas.drawLine(middle, 0, middle, height/4, centerPaint);
-        canvas.drawLine(middle, height*3/4, middle, height, centerPaint);
+        if (this.error != -1000) {
+            int width = getWidth(), height = getHeight(), middle = width / 2;
 
-        // draw error position
-        int xpos = middle + (int)(error*width);
-        canvas.drawLine(xpos, 0, xpos, height, linePaint);
+            // draw middle indicator
+            canvas.drawLine(middle, 0, middle, height / 6, centerPaint);
+            canvas.drawLine(middle, height * 5 / 6, middle, height, centerPaint);
+
+            // draw error position
+            int xpos = middle + (int) (error * width);
+            canvas.drawLine(xpos, 0, xpos, height, linePaint);
+        }
     }
 
 }
